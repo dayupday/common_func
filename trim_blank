@@ -1,0 +1,20 @@
+
+/*------------------------------------------------------------------
+ * 参数1 : 字符串
+ * 返  回: 0--成功 , 非0--失败
+ * 说  明: 删除字符串(参数1)前后的空白字符,包括"\n\r\t\v"
+ *----------------------------------------------------------------*/
+void trim_blank (char *str)
+{
+	size_t  len = strlen (str);
+	size_t  lws;				// trim trailing whitespace
+
+	while (len && isspace (str[len - 1]))
+		--len;					/* trim leading whitespace */
+	if (len)
+	{
+		lws = strspn (str, " \n\r\t\v");
+		memmove (str, str + lws, len -= lws);
+	}
+	str[len] = 0;
+}
