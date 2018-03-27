@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <assert.h>
+
+void trim_blank (char *str)
+{
+	size_t  len = strlen (str);
+	size_t  lws;				// trim trailing whitespace
+
+	while (len && isspace (str[len - 1]))
+		--len;					/* trim leading whitespace */
+	if (len)
+	{
+		lws = strspn (str, " \n\r\t\v");
+		memmove (str, str + lws, len -= lws);
+	}
+	str[len] = 0;
+}
+
+int get_policy_name(char *attr, const char *key, const char *delm, char *name)
+{
+    assert(attr && key && delm && name);
+    char *pt = NULL;
+
+    pt = strtok(attr, delm);
+    while(pt)
+    {
+        if (!strcmp(pt, key))
+        {
+            pt = strtok(NULL, delm);
+            break;
+        }
+        pt = strtok(NULL, delm);
+    }
+
+    if (!pt)
+    {
+        return 1;
+    }
+
+    trim_blank(pt);
+    printf("pt=%s\n", pt);
+    strcpy(name, pt);
+
+    return 0;
+
+}
+
+
+int main()
+{
+    char strings[] = " abc, bbb ,Hello, eno33554984,ddd ";
+    char policy_name[64] = {0};
+
+    get_policy_name(strings, "Hello", ",", policy_name);
+
+    printf("name:%s\n", policy_name);
+
+
+    return 0;
+}
