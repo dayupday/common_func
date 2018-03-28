@@ -149,7 +149,7 @@ gcc -o xml ./main.c   -I /usr/include/libxml2 -L /usr/lib -lxml2
 一个xml文档被创建，写入811个字节
 <?xml version="1.0"?>
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <smart-nic xmlns="http://www.gsta.com/smart-nic">
+  <smart-nic xmlns="http://www.***.com/smart-nic">
     <access-lists>
       <acl>
         <name>sample-ipv4-acl8</name>
