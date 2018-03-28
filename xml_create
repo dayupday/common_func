@@ -1,0 +1,193 @@
+#include <stdio.h>  
+#include <libxml2/libxml/parser.h>  
+#include <libxml2/libxml/tree.h>  
+  
+void creat_xml_header(xmlDocPtr doc, xmlNodePtr access_lists_node)
+{
+    xmlNodePtr config_node = xmlNewNode(NULL,BAD_CAST"config");
+    xmlNewProp(config_node,BAD_CAST"xmlns",BAD_CAST"urn:ietf:params:xml:ns:netconf:base:1.0");  
+    xmlDocSetRootElement(doc,config_node);
+
+    xmlNodePtr smart_nic_node = xmlNewNode(NULL,BAD_CAST"smart-nic");
+    xmlNewProp(smart_nic_node,BAD_CAST"xmlns",BAD_CAST"http://www.***.com/smart-nic");  
+    xmlAddChild(config_node, smart_nic_node);
+
+    xmlAddChild(smart_nic_node, access_lists_node);
+}
+  
+void add_acl_xml(xmlDocPtr doc, xmlNodePtr access_lists_node)
+{    
+    xmlNodePtr content;
+    char name[] = "sample-ipv4-acl8";
+
+    xmlNodePtr acl_node = xmlNewNode(NULL,BAD_CAST"acl");
+    xmlAddChild(access_lists_node, acl_node);
+
+    xmlNodePtr name_node = xmlNewNode(NULL, BAD_CAST"name");  
+    //content = xmlNewText(BAD_CAST"sample-ipv4-acl2");  
+    content = xmlNewText((xmlChar *)name);  
+    xmlAddChild(name_node, content);  
+
+    xmlNodePtr type_node = xmlNewNode(NULL, BAD_CAST"type");  
+    content = xmlNewText(BAD_CAST"ipv4-acl-type");  
+    xmlAddChild(type_node, content);  
+
+    xmlAddChild(acl_node, name_node);  
+    xmlAddChild(acl_node, type_node);  
+
+    xmlNodePtr aces_node = xmlNewNode(NULL,BAD_CAST"aces");
+    xmlAddChild(acl_node, aces_node);
+
+    xmlNodePtr ace_node = xmlNewNode(NULL,BAD_CAST"ace");
+    xmlAddChild(aces_node, ace_node);
+
+    xmlNodePtr ace_name_node = xmlNewNode(NULL, BAD_CAST"name");  
+    content = xmlNewText(BAD_CAST"rule1");  
+    xmlAddChild(ace_name_node, content);  
+    xmlAddChild(ace_node, ace_name_node);  
+
+
+    xmlNodePtr matches_node = xmlNewNode(NULL, BAD_CAST"matches");
+    xmlAddChild(ace_node, matches_node);  
+
+    xmlNodePtr l3_node = xmlNewNode(NULL, BAD_CAST"l3");
+    xmlAddChild(matches_node, l3_node);  
+
+    xmlNodePtr ipv4_node = xmlNewNode(NULL, BAD_CAST"ipv4");
+    xmlAddChild(l3_node, ipv4_node);  
+
+    xmlNodePtr protocol_node = xmlNewNode(NULL, BAD_CAST"protocol");  
+    content = xmlNewText(BAD_CAST"tcp");  
+    xmlAddChild(protocol_node, content);  
+    xmlAddChild(ipv4_node, protocol_node);  
+
+    xmlNodePtr dest_ipv4_node = xmlNewNode(NULL, BAD_CAST"destination-ipv4-network");  
+    content = xmlNewText(BAD_CAST"11.11.11.1/24");  
+    xmlAddChild(dest_ipv4_node, content);  
+    xmlAddChild(ipv4_node, dest_ipv4_node);  
+
+    xmlNodePtr src_ipv4_node = xmlNewNode(NULL, BAD_CAST"source-ipv4-network");  
+    content = xmlNewText(BAD_CAST"10.10.10.1/24");  
+    xmlAddChild(src_ipv4_node, content);  
+    xmlAddChild(ipv4_node, src_ipv4_node);  
+
+    xmlNodePtr tcp_node = xmlNewNode(NULL, BAD_CAST"tcp");
+    xmlAddChild(matches_node, tcp_node);  
+
+    xmlNodePtr src_port_node = xmlNewNode(NULL, BAD_CAST"source-port-range-or-operator");
+    xmlAddChild(tcp_node, src_port_node);  
+
+    xmlNodePtr src_range_node = xmlNewNode(NULL, BAD_CAST"range");
+    xmlAddChild(src_port_node, src_range_node);  
+
+    xmlNodePtr src_lower_port_node = xmlNewNode(NULL, BAD_CAST"lower-port");  
+    content = xmlNewText(BAD_CAST"90");  
+    xmlAddChild(src_lower_port_node, content);  
+    xmlAddChild(src_range_node, src_lower_port_node);  
+
+    xmlNodePtr src_upper_port_node = xmlNewNode(NULL, BAD_CAST"upper-port");  
+    content = xmlNewText(BAD_CAST"1000");  
+    xmlAddChild(src_upper_port_node, content);  
+    xmlAddChild(src_range_node, src_upper_port_node);  
+
+    xmlNodePtr dest_port_node = xmlNewNode(NULL, BAD_CAST"destination-port-range-or-operator");
+    xmlAddChild(tcp_node, dest_port_node);  
+
+    xmlNodePtr dest_range_node = xmlNewNode(NULL, BAD_CAST"range");
+    xmlAddChild(dest_port_node, dest_range_node);  
+
+    xmlNodePtr dest_lower_port_node = xmlNewNode(NULL, BAD_CAST"lower-port");  
+    content = xmlNewText(BAD_CAST"999");  
+    xmlAddChild(dest_lower_port_node, content);  
+    xmlAddChild(dest_range_node, dest_lower_port_node);  
+
+    xmlNodePtr dest_upper_port_node = xmlNewNode(NULL, BAD_CAST"upper-port");  
+    content = xmlNewText(BAD_CAST"2000");  
+    xmlAddChild(dest_upper_port_node, content);  
+    xmlAddChild(dest_range_node, dest_upper_port_node);  
+
+    xmlNodePtr actions_node = xmlNewNode(NULL,BAD_CAST"actions");
+    xmlAddChild(ace_node, actions_node);  
+
+    xmlNodePtr forwarding_node = xmlNewNode(NULL, BAD_CAST"forwarding");  
+    content = xmlNewText(BAD_CAST"drop");  
+    xmlAddChild(forwarding_node, content);  
+    xmlAddChild(actions_node, forwarding_node);  
+}
+
+int main(int argc, char* argv[])
+{    
+    xmlDocPtr doc;
+    xmlNodePtr access_lists_node;
+
+    doc=xmlNewDoc(BAD_CAST"1.0");  
+    access_lists_node = xmlNewNode(NULL,BAD_CAST"access-lists");
+
+    creat_xml_header(doc, access_lists_node);
+    add_acl_xml(doc, access_lists_node);
+
+    int nRel=xmlSaveFile("test.xml",doc);  
+    if(nRel!=-1){  
+        printf("一个xml文档被创建，写入%d个字节\n", nRel);  
+    }   
+
+    xmlChar *xmlbuff;
+    xmlDocDumpFormatMemory(doc, &xmlbuff, NULL, 1);
+    printf("%s\n", xmlbuff);
+
+    xmlFree(xmlbuff);
+    xmlFreeDoc(doc);  
+
+    return 1;  
+}
+
+gcc -o xml ./main.c   -I /usr/include/libxml2 -L /usr/lib -lxml2
+(yum install libxml2-devel -y)
+
+输出结果：
+[root@localhost xml]# ./xml 
+一个xml文档被创建，写入811个字节
+<?xml version="1.0"?>
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <smart-nic xmlns="http://www.gsta.com/smart-nic">
+    <access-lists>
+      <acl>
+        <name>sample-ipv4-acl8</name>
+        <type>ipv4-acl-type</type>
+        <aces>
+          <ace>
+            <name>rule1</name>
+            <matches>
+              <l3>
+                <ipv4>
+                  <protocol>tcp</protocol>
+                  <destination-ipv4-network>11.11.11.1/24</destination-ipv4-network>
+                  <source-ipv4-network>10.10.10.1/24</source-ipv4-network>
+                </ipv4>
+              </l3>
+              <tcp>
+                <source-port-range-or-operator>
+                  <range>
+                    <lower-port>90</lower-port>
+                    <upper-port>1000</upper-port>
+                  </range>
+                </source-port-range-or-operator>
+                <destination-port-range-or-operator>
+                  <range>
+                    <lower-port>999</lower-port>
+                    <upper-port>2000</upper-port>
+                  </range>
+                </destination-port-range-or-operator>
+              </tcp>
+            </matches>
+            <actions>
+              <forwarding>drop</forwarding>
+            </actions>
+          </ace>
+        </aces>
+      </acl>
+    </access-lists>
+  </smart-nic>
+</config>
+
+
