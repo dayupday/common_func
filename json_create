@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+#include <json-c/json.h>
+
+
+int main()
+{
+     struct json_object *my_object;
+
+     my_object = json_object_new_object();
+
+     /*添加json名称和值到json对象集合中*/
+     json_object_object_add(my_object, "abc",json_object_new_int(12));
+     json_object_object_add(my_object, "foo",json_object_new_string("bar"));
+     json_object_object_add(my_object, "bool0",json_object_new_boolean(0));
+     json_object_object_add(my_object, "bool1",json_object_new_boolean(1));
+     json_object_object_add(my_object, "baz",json_object_new_string("bang"));
+
+     printf("my_object.to_string()=%s\n",json_object_to_json_string(my_object));
+
+     json_object_put(my_object);
+    
+
+     return 0;
+}
+
+gcc ./creat_json.c -ljson-c -Wall
+(yum install json-c-devel -y)
+
+[root@trex libs]# ./a.out 
+my_object.to_string()={ "abc": 12, "foo": "bar", "bool0": false, "bool1": true, "baz": "bang" }
