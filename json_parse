@@ -1,0 +1,186 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+#include "json-c/json.h"
+
+#define MAX_XMLNS_LEN 128
+#define MAX_TYPE_LEN 64
+#define MAX_PROTOCOL_LEN 10
+#define MAX_IP_LEN 20
+#define MAX_PORT_LEN 6
+
+#define MAX_ACTION_LEN 64
+#define MAX_CONTENT_LEN 2048
+#define MAX_DESCRIPTION_LEN 256
+#define MAX_NAME_LEN 128
+
+typedef struct ST_ACL
+{
+    char name[MAX_NAME_LEN];
+    char type[MAX_TYPE_LEN];
+    char ace_name[MAX_NAME_LEN];
+    char protocol[MAX_PROTOCOL_LEN];
+    char dip[MAX_IP_LEN];
+    char sip[MAX_IP_LEN];
+    char src_port_lower[MAX_PORT_LEN];
+    char src_port_upper[MAX_PORT_LEN];
+    char dest_port_lower[MAX_PORT_LEN];
+    char dest_port_upper[MAX_PORT_LEN];
+    char forwarding[MAX_ACTION_LEN];
+}ST_ACL;
+
+typedef struct ST_CONTENT
+{
+    char config_xmlns[MAX_XMLNS_LEN];
+    char nic_xmlns[MAX_XMLNS_LEN];
+    ST_ACL  acl;
+}ST_CONTENT;
+
+static void parse_json_to_string(char *value, struct json_object *input, const char *key)
+{
+    
+    struct json_object *ret_obj;
+    
+    if (TRUE == json_object_object_get_ex(input, key, &ret_obj))
+    {
+        const char *tmp = json_object_to_json_string(ret_obj);
+        memcpy(value, &tmp[1], strlen(tmp)-2);
+printf("%s = %s\n", key, value);
+        json_object_put(ret_obj);
+    }
+}
+#if 1
+void parse_tcp_policy(struct json_object *tcp_obj)
+{
+    struct json_object *src_port_obj;  
+    struct json_object *src_port_range_obj;  
+    struct json_object *dest_port_obj;  
+    struct json_object *dest_port_range_obj;  
+    char buff[128] = {0};
+
+    json_object_object_get_ex(tcp_obj, "source-port-range-or-operator", &src_port_obj);
+    json_object_object_get_ex(src_port_obj, "range", &src_port_range_obj);
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, src_port_range_obj, "lower-port");
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, src_port_range_obj, "upper-port");
+
+    json_object_object_get_ex(tcp_obj, "destination-port-range-or-operator", &dest_port_obj);
+    json_object_object_get_ex(dest_port_obj, "range", &dest_port_range_obj);
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, dest_port_range_obj, "lower-port");
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, dest_port_range_obj, "upper-port");
+
+    json_object_put(src_port_obj);
+    json_object_put(src_port_range_obj);
+    json_object_put(dest_port_obj);
+    json_object_put(dest_port_range_obj);
+}
+
+void parse_acl_policy(struct json_object *acl_obj)
+{
+    struct json_object *aces_obj;  
+    struct json_object *ace_obj;  
+    struct json_object *matches_obj;  
+    struct json_object *l3_obj;  
+    struct json_object *ipv4_obj;  
+    struct json_object *tcp_obj;  
+    struct json_object *actions_obj;  
+    char buff[128] = {0};
+
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, acl_obj, "name");
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, acl_obj, "type");
+    json_object_object_get_ex(acl_obj, "aces", &aces_obj);  
+    json_object_object_get_ex(aces_obj, "ace", &ace_obj);  
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, ace_obj, "name");
+    json_object_object_get_ex(ace_obj, "matches", &matches_obj);  
+    json_object_object_get_ex(matches_obj, "l3", &l3_obj);  
+    json_object_object_get_ex(l3_obj, "ipv4", &ipv4_obj);  
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, ipv4_obj, "protocol");
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, ipv4_obj, "destination-ipv4-network");
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, ipv4_obj, "source-ipv4-network");
+    json_object_object_get_ex(matches_obj, "tcp", &tcp_obj);  
+
+    parse_tcp_policy(tcp_obj);
+
+    json_object_object_get_ex(ace_obj, "actions", &actions_obj);  
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, actions_obj, "forwarding");
+
+    json_object_put(aces_obj);
+    json_object_put(ace_obj);
+    json_object_put(matches_obj);
+    json_object_put(l3_obj);
+    json_object_put(ipv4_obj);
+    json_object_put(tcp_obj);
+    json_object_put(actions_obj);
+}
+
+#endif
+
+void parse_content_policy(struct json_object *content_obj)
+{
+    struct json_object *config_obj;  
+    struct json_object *nic_obj;  
+    struct json_object *access_obj;  
+    struct json_object *acl_obj;  
+    char buff[128] = {0};
+    
+    json_object_object_get_ex(content_obj, "config", &config_obj);  
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, config_obj, "xmlns");
+    json_object_object_get_ex(config_obj, "smart-nic", &nic_obj);  
+    memset(buff, 0, sizeof(buff));
+    parse_json_to_string(buff, nic_obj, "xmlns");
+    json_object_object_get_ex(nic_obj, "access-lists", &access_obj);  
+    json_object_object_get_ex(access_obj, "acl", &acl_obj);  
+    parse_acl_policy(acl_obj);
+    json_object_put(acl_obj);
+    json_object_put(access_obj);
+    json_object_put(nic_obj);
+    json_object_put(config_obj);
+}
+
+int main()
+{
+    struct json_object *content_obj;  
+	
+    char str[] = "{\"config\":{\"xmlns\":\"urn:ietf:params:xml:ns:netconf:base:1.0\",\"smart-nic\":{\"xmlns\":\"http://www.***.com/smart-nic\",\"access-lists\":{\"acl\":{\"name\":\"sample-ipv4-acl2\",\"type\":\"ipv4-acl-type\",\"aces\":{\"ace\":{\"name\":\"rule1\",\"matches\":{\"l3\":{\"ipv4\":{\"protocol\":\"tcp\",\"destination-ipv4-network\":\"11.11.11.1/24\",\"source-ipv4-network\":\"10.10.10.1/24\"}},\"tcp\":{\"source-port-range-or-operator\":{\"range\":{\"lower-port\":\" 90\",\"upper-port\":\"1000\"}},\"destination-port-range-or-operator\":{\"range\":{\"lower-port\":\" 999\",\"upper-port\":\"2000\"}}}},\"actions\":{\"forwarding\":\"drop\"}}}}}}}}";
+    printf("str=%s\n", str);
+    content_obj = json_tokener_parse(str);  
+//    printf("1-tokener parse: %s\n", json_object_to_json_string(my_obj));
+
+    parse_content_policy(content_obj);
+
+    json_object_put(content_obj);
+
+    return 0;
+}
+
+gcc ./parse_json.c -ljson-c -Wall
+(yum install json-c-devel -y)
+
+结果：
+[root@trex libs]# ./a.out 
+str={"config":{"xmlns":"urn:ietf:params:xml:ns:netconf:base:1.0","smart-nic":{"xmlns":"http://www.***.com/smart-nic","access-lists":{"acl":{"name":"sample-ipv4-acl2","type":"ipv4-acl-type","aces":{"ace":{"name":"rule1","matches":{"l3":{"ipv4":{"protocol":"tcp","destination-ipv4-network":"11.11.11.1/24","source-ipv4-network":"10.10.10.1/24"}},"tcp":{"source-port-range-or-operator":{"range":{"lower-port":" 90","upper-port":"1000"}},"destination-port-range-or-operator":{"range":{"lower-port":" 999","upper-port":"2000"}}}},"actions":{"forwarding":"drop"}}}}}}}}
+xmlns = urn:ietf:params:xml:ns:netconf:base:1.0
+xmlns = http:\/\/www.gsta.com\/smart-nic
+name = sample-ipv4-acl2
+type = ipv4-acl-type
+name = rule1
+protocol = tcp
+destination-ipv4-network = 11.11.11.1\/24
+source-ipv4-network = 10.10.10.1\/24
+lower-port =  90
+upper-port = 1000
+lower-port =  999
+upper-port = 2000
+forwarding = drop
