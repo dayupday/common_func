@@ -76,6 +76,7 @@ main(int argc, char **argv) {
     return (1);  
 }
 
+gcc -Wall -o parse_xml parse_xml.c -I /usr/include/libxml2 -L /usr/lib -lxml2
 [root@localhost xml]# ./parse_xml test1.xml 
 keyword: example keyword
 
