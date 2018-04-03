@@ -3,4 +3,4 @@
 <a href="https://github.com/dayupday/common_func/blob/master/json_parse" target="_blank" >json_parse </a> json串解析成数据字段 <br/>
 <a href="https://github.com/dayupday/common_func/blob/master/trim_blank" target="_blank" >trim_blank </a> 删除字符串两端的空格 <br/>
 <a href="https://github.com/dayupday/common_func/blob/master/xml_create" target="_blank" >xml_create </a> 根据数据字段生成xml串 <br/>
-<a href="https://github.com/dayupday/common_func/blob/master/xml_parse" target="_blank" >xml_create </a> 根据数据字段解析xml串
+<a href="https://github.com/dayupday/common_func/blob/master/xml_parse" target="_blank" >xml_parse </a> 根据数据字段解析xml串
