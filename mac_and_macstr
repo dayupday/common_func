@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+char *mac_to_str(uint8_t * pmac,const char ch_ken, char *str_mac)
+{
+	char sz_format[] = "%02X:%02X:%02X:%02X:%02X:%02X";
+	int nlen = strlen(sz_format);
+        int i = 0;
+
+	if (ch_ken != ':')
+	{
+		for (i = 2; i < nlen; i += 3)
+		{
+			sz_format[i] = ch_ken;
+		}
+	}
+
+	char sz_mac[32] = {0};
+	sprintf(sz_mac, sz_format, pmac[0], pmac[1], pmac[2], pmac[3], pmac[4], pmac[5]);
+
+        strcpy(str_mac, sz_mac);
+
+	return str_mac;
+}
+
+uint8_t char_to_data(const char ch)
+{
+	switch(ch)
+	{
+	case '0': return 0;
+	case '1': return 1;
+	case '2': return 2;
+	case '3': return 3;
+	case '4': return 4;
+	case '5': return 5;
+	case '6': return 6;
+	case '7': return 7;
+	case '8': return 8;
+	case '9': return 9;
+	case 'a': 
+	case 'A': return 10;
+	case 'b': 
+	case 'B': return 11;
+	case 'c':
+	case 'C': return 12;
+	case 'd': 
+	case 'D': return 13;
+	case 'e': 
+	case 'E': return 14;
+	case 'f':
+	case 'F': return 15;	
+	}
+	return 0;
+}
+
+int str_to_mac(const char * sz_mac, uint8_t * pmac)
+{
+	const char * ptemp = sz_mac;
+        int i = 0;
+
+	for (i = 0;i < 6;++i)
+	{
+		pmac[i] = char_to_data(*ptemp++) * 16;
+		pmac[i] += char_to_data(*ptemp++);
+		ptemp++;
+	}	
+
+        return 0;
+}
+
+int main()
+{
+    char mac[] = "00:01:02:03:04:05";
+    uint8_t nmac[6] = {0};
+    char smac[32] = {0};
+    
+    str_to_mac(mac, nmac);
+    printf("%02x:%02x:%02x:%02x:%02x:%02x\n", 
+      nmac[0], nmac[1], nmac[2], nmac[3], nmac[4], nmac[5]);
+    
+    mac_to_str(nmac, ':', smac);
+    printf("str:%s\n", smac);
+
+    return 0;
+}
+
+
+
+[root@localhost mac_str]# ./main 
+00:01:02:03:04:05
+str:00:01:02:03:04:05
